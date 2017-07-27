@@ -113,7 +113,7 @@ HFONT GetFontFromDialogTemplate(LPCTSTR lpszResourceID)
 						//BYTE* pPtr_FontFaceName = pData;
 						pData = AdvanceThrough_String(pData, strFontFaceName);
 
-						if (lstrcmpW(strFontFaceName, L"MS Shell Dlg") == 0)
+						if ((pDTX1->style & DS_FIXEDSYS) && lstrcmpW(strFontFaceName, L"MS Shell Dlg") == 0)
 						{
 							lstrcpy(strFontFaceName, TEXT("MS Shell Dlg 2"));
 						}
@@ -127,46 +127,46 @@ HFONT GetFontFromDialogTemplate(LPCTSTR lpszResourceID)
 	return hFont;
 }
 
-BOOL GetActualDialogBaseUnits(HWND hWnd, double *width, double *height)
+BOOL GetActualDialogBaseUnits(HWND hWnd, SIZE *baseUnit)
 {
 	RECT rect = { 4, 8, 0, 0 };
 	BOOL result = MapDialogRect(hWnd, &rect);
 	if (result)
 	{
-		*width = rect.left / 4.0;
-		*height = rect.top / 8.0;
+		baseUnit->cx = rect.left;
+		baseUnit->cy = rect.top;
 	}
 	return result;
 }
 
-BOOL GetActualDialogBaseUnits2(HWND hWnd, double *width, double *height)
+BOOL GetActualDialogBaseUnits2(HWND hWnd, SIZE *baseUnit)
 {
 	HDC hdc = GetDC(hWnd);
 	HFONT hFont = (HFONT)SendMessage(hWnd, WM_GETFONT, 0, 0);
 	HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
 	TEXTMETRIC tm = { 0 };
 	GetTextMetrics(hdc, &tm);
-	*height = tm.tmHeight / 8.0;
+	baseUnit->cy = (int)(tm.tmHeight);
 	SIZE size = { 0 };
 	GetTextExtentPoint32(hdc, TEXT("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52, &size);
 	SelectObject(hdc, hOldFont);
-	*width = ((int)(size.cx / 26 + 1) / 2) / 4.0;
+	baseUnit->cx = (int)((size.cx / 26 + 1) / 2);
 	ReleaseDC(hWnd, hdc);
 	return TRUE;
 }
 
-BOOL GetActualDialogBaseUnits3(HWND hWnd, double *width, double *height, LPCTSTR lpszResourceID)
+BOOL GetActualDialogBaseUnits3(HWND hWnd, SIZE *baseUnit, LPCTSTR lpszResourceID)
 {
 	HDC hdc = GetDC(hWnd);
 	HFONT hFont = (HFONT)GetFontFromDialogTemplate(lpszResourceID);
 	HFONT hOldFont = (HFONT)SelectObject(hdc, hFont);
 	TEXTMETRIC tm = { 0 };
 	GetTextMetrics(hdc, &tm);
-	*height = tm.tmHeight / 8.0;
+	baseUnit->cy = (int)(tm.tmHeight);
 	SIZE size = { 0 };
 	GetTextExtentPoint32(hdc, TEXT("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"), 52, &size);
 	SelectObject(hdc, hOldFont);
-	*width = ((int)(size.cx / 26 + 1) / 2) / 4.0;
+	baseUnit->cx = (int)((size.cx / 26 + 1) / 2);
 	ReleaseDC(hWnd, hdc);
 	DeleteObject(hFont);
 	return TRUE;
@@ -192,17 +192,17 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned msg, WPARAM wParam, LPARAM lPara
 			TextOut(hdc, rect.right - rect.left + 10, rect.top, szText, lstrlen(szText));
 			nTop += 110;
 
-			double w, h;
+			SIZE size;
 			double xScale = 1.0;
 			double yScale = 1.0;
 
-			if (GetActualDialogBaseUnits(hWnd, &w, &h))
+			if (GetActualDialogBaseUnits(hWnd, &size))
 			{
-				xScale = (w / (6.0 / 4.0));
-				yScale = (h / (13.0 / 8.0));
+				xScale = size.cx / 6.0;
+				yScale = size.cy / 13.0;
 			}
 
-			//①
+			// ①
 			RECT rect0 = { 0, 0, 66, 61 };
 			MapDialogRect(hWnd, &rect0);
 			OffsetRect(&rect0, 0, (int)(nTop * yScale));
@@ -219,10 +219,10 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned msg, WPARAM wParam, LPARAM lPara
 			nTop += 110;
 
 			// ③
-			if (GetActualDialogBaseUnits2(hWnd, &w, &h))
+			if (GetActualDialogBaseUnits2(hWnd, &size))
 			{
-				xScale = (w / (6.0 / 4.0));
-				yScale = (h / (13.0 / 8.0));
+				xScale = size.cx / 6.0;
+				yScale = size.cy / 13.0;
 			}
 			RECT rect2 = { 0, (LONG)round(nTop * yScale), (LONG)round(99 * xScale), (LONG)round(nTop * yScale) + (LONG)round(99.125 * yScale) };
 			FillRect(hdc, &rect2, (HBRUSH)GetStockObject(BLACK_BRUSH));
@@ -232,10 +232,10 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned msg, WPARAM wParam, LPARAM lPara
 
 			// ④
 			double yOldScale = yScale;
-			if (GetActualDialogBaseUnits3(hWnd, &w, &h, MAKEINTRESOURCE(IDD_DIALOG1)))
+			if (GetActualDialogBaseUnits3(hWnd, &size, MAKEINTRESOURCE(IDD_DIALOG1)))
 			{
-				xScale = (w / (6.0 / 4.0));
-				yScale = (h / (13.0 / 8.0));
+				xScale = size.cx / 6.0;
+				yScale = size.cy / 13.0;
 			}
 			RECT rect3 = { 0, (LONG)round(nTop * yOldScale), (LONG)round(99 * xScale), (LONG)round(nTop * yOldScale) + (LONG)round(99.125 * yScale) };
 			FillRect(hdc, &rect3, (HBRUSH)GetStockObject(BLACK_BRUSH));
