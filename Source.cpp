@@ -207,14 +207,14 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned msg, WPARAM wParam, LPARAM lPara
 			MapDialogRect(hWnd, &rect0);
 			OffsetRect(&rect0, 0, (int)(nTop * yScale));
 			FillRect(hdc, &rect0, (HBRUSH)GetStockObject(BLACK_BRUSH));
-			wsprintf(szText, TEXT("①描画短形の大きさ: %d x %d"), rect0.right - rect0.left, rect0.bottom - rect0.top);
+			wsprintf(szText, TEXT("①描画矩形の大きさ: %d x %d"), rect0.right - rect0.left, rect0.bottom - rect0.top);
 			TextOut(hdc, rect0.right - rect0.left + 10, rect0.top, szText, lstrlen(szText));
 			nTop += 110;
 
 			// ②
 			RECT rect1 = { 0, (LONG)round(nTop * yScale), (LONG)round(99 * xScale), (LONG)round(nTop * yScale) + (LONG)round(99.125 * yScale) };
 			FillRect(hdc, &rect1, (HBRUSH)GetStockObject(BLACK_BRUSH));
-			wsprintf(szText, TEXT("②描画短形の大きさ: %d x %d"), rect1.right - rect1.left, rect1.bottom - rect1.top);
+			wsprintf(szText, TEXT("②描画矩形の大きさ: %d x %d"), rect1.right - rect1.left, rect1.bottom - rect1.top);
 			TextOut(hdc, rect1.right - rect1.left + 10, rect1.top, szText, lstrlen(szText));
 			nTop += 110;
 
@@ -226,7 +226,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned msg, WPARAM wParam, LPARAM lPara
 			}
 			RECT rect2 = { 0, (LONG)round(nTop * yScale), (LONG)round(99 * xScale), (LONG)round(nTop * yScale) + (LONG)round(99.125 * yScale) };
 			FillRect(hdc, &rect2, (HBRUSH)GetStockObject(BLACK_BRUSH));
-			wsprintf(szText, TEXT("③描画短形の大きさ: %d x %d"), rect2.right - rect2.left, rect2.bottom - rect2.top);
+			wsprintf(szText, TEXT("③描画矩形の大きさ: %d x %d"), rect2.right - rect2.left, rect2.bottom - rect2.top);
 			TextOut(hdc, rect2.right - rect2.left + 10, rect2.top, szText, lstrlen(szText));
 			nTop += 110;
 
@@ -239,7 +239,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned msg, WPARAM wParam, LPARAM lPara
 			}
 			RECT rect3 = { 0, (LONG)round(nTop * yOldScale), (LONG)round(99 * xScale), (LONG)round(nTop * yOldScale) + (LONG)round(99.125 * yScale) };
 			FillRect(hdc, &rect3, (HBRUSH)GetStockObject(BLACK_BRUSH));
-			wsprintf(szText, TEXT("④描画短形の大きさ: %d x %d"), rect3.right - rect3.left, rect3.bottom - rect3.top);
+			wsprintf(szText, TEXT("④描画矩形の大きさ: %d x %d"), rect3.right - rect3.left, rect3.bottom - rect3.top);
 			TextOut(hdc, rect3.right - rect3.left + 10, rect3.top, szText, lstrlen(szText));
 			nTop += 110;
 
