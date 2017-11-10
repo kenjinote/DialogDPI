@@ -66,59 +66,37 @@ HFONT GetFontFromDialogTemplate(LPCTSTR lpszResourceID)
 	HRSRC hResource = FindResource(0, lpszResourceID, RT_DIALOG);
 	if (hResource)
 	{
-		HGLOBAL hDialogTemplate = LoadResource(GetModuleHandle(0), hResource);
-		if (hDialogTemplate)
+		DWORD dwszDialogTemplate = SizeofResource(GetModuleHandle(0), hResource);
+		if (dwszDialogTemplate)
 		{
-			LPCDLGTEMPLATE lpDialogTemplate = (LPCDLGTEMPLATE)LockResource(hDialogTemplate);
-			DWORD dwszDialogTemplate = SizeofResource(GetModuleHandle(0), hResource);
-			if (lpDialogTemplate && dwszDialogTemplate)
+			HGLOBAL hDialogTemplate = LoadResource(GetModuleHandle(0), hResource);
+			if (hDialogTemplate)
 			{
-				LPCDLGTEMPLATE lpDialogTemplateToUse = lpDialogTemplate;
-				DLGTEMPLATEEX_PART1* pDTX1 = (DLGTEMPLATEEX_PART1*)lpDialogTemplate;
-				if (pDTX1->signature == 0xFFFF && pDTX1->dlgVer == 1)
+				LPCDLGTEMPLATE lpDialogTemplate = (LPCDLGTEMPLATE)LockResource(hDialogTemplate);
+				if (lpDialogTemplate)
 				{
-					//Now get thru variable length elements
-					BYTE* pData = (BYTE*)(pDTX1 + 1);
-
-					//sz_Or_Ord menu;
-					pData = AdvanceThrough_sz_Or_Ord(pData);
-
-					//sz_Or_Ord windowClass;
-					pData = AdvanceThrough_sz_Or_Ord(pData);
-
-					//title
-					WCHAR strTitle[1024];
-					pData = AdvanceThrough_String(pData, strTitle);
-
-					//Now pointsize of the font
-					//This member is present only if the style member specifies DS_SETFONT or DS_SHELLFONT.
-					if (pDTX1->style & (DS_SETFONT | DS_SHELLFONT))
+					DLGTEMPLATEEX_PART1* pDTX1 = (DLGTEMPLATEEX_PART1*)lpDialogTemplate;
+					if (pDTX1->signature == 0xFFFF && pDTX1->dlgVer == 1)
 					{
-						//Font size in pts
-						BYTE* pPtr_FontSize = pData;
-						WORD ptFontSize = *(WORD*)pData;
-						pData += sizeof(WORD);
-
-						//WORD wFontWeight = *(WORD*)pData;
-						pData += sizeof(WORD);
-
-						//BYTE italic = *(BYTE*)pData;
-						pData += sizeof(BYTE);
-
-						//BYTE charset = *(BYTE*)pData;
-						pData += sizeof(BYTE);
-
-						//Font face name
-						WCHAR strFontFaceName[LF_FACESIZE];
-						//BYTE* pPtr_FontFaceName = pData;
-						pData = AdvanceThrough_String(pData, strFontFaceName);
-
-						if ((pDTX1->style & DS_FIXEDSYS) && lstrcmpW(strFontFaceName, L"MS Shell Dlg") == 0)
+						BYTE* pData = (BYTE*)(pDTX1 + 1);
+						pData = AdvanceThrough_sz_Or_Ord(pData);
+						pData = AdvanceThrough_sz_Or_Ord(pData);
+						pData = AdvanceThrough_String(pData, NULL);
+						if (pDTX1->style & (DS_SETFONT | DS_SHELLFONT))
 						{
-							lstrcpy(strFontFaceName, TEXT("MS Shell Dlg 2"));
+							WORD ptFontSize = *(WORD*)pData;
+							pData += sizeof(WORD);
+							pData += sizeof(WORD);
+							pData += sizeof(BYTE);
+							pData += sizeof(BYTE);
+							WCHAR strFontFaceName[LF_FACESIZE];
+							pData = AdvanceThrough_String(pData, strFontFaceName);
+							if ((pDTX1->style & DS_FIXEDSYS) && lstrcmpW(strFontFaceName, L"MS Shell Dlg") == 0)
+							{
+								lstrcpy(strFontFaceName, TEXT("MS Shell Dlg 2"));
+							}
+							hFont = CreateFontW(-MulDiv(ptFontSize, 96, 72), 0, 0, 0, FW_NORMAL, 0, 0, 0, DEFAULT_CHARSET, 0, 0, 0, 0, strFontFaceName);
 						}
-
-						hFont = CreateFontW(-MulDiv(ptFontSize, 96, 72), 0, 0, 0, FW_NORMAL, 0, 0, 0, SHIFTJIS_CHARSET, 0, 0, 0, 0, strFontFaceName);
 					}
 				}
 			}
